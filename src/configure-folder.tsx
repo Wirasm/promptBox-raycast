@@ -1,21 +1,7 @@
-import {
-  Form,
-  ActionPanel,
-  Action,
-  showToast,
-  Toast,
-  Icon,
-  useNavigation,
-  clearSearchBar,
-} from "@raycast/api";
-import { setPromptsFolder } from "./utils";
+import { Form, ActionPanel, Action, showToast, Toast, useNavigation, clearSearchBar } from "@raycast/api";
 import { useState } from "react";
 import fs from "fs";
-import path from "path";
-
-interface Preferences {
-  promptsFolder: string;
-}
+import { setPromptsFolder } from "./utils";
 
 export default function Command() {
   const [selectedFolder, setSelectedFolder] = useState<string>();
@@ -33,7 +19,7 @@ export default function Command() {
       }
 
       const folderPath = values.folder[0];
-      
+
       // Create folder if it doesn't exist
       if (!fs.existsSync(folderPath)) {
         fs.mkdirSync(folderPath, { recursive: true });
@@ -82,9 +68,7 @@ export default function Command() {
         defaultValue={selectedFolder ? [selectedFolder] : undefined}
         onChange={(paths) => setSelectedFolder(paths[0])}
       />
-      <Form.Description
-        text="This folder will be used to store all your prompts. You can change it later in the extension preferences."
-      />
+      <Form.Description text="This folder will be used to store all your prompts. You can change it later in the extension preferences." />
     </Form>
   );
 }

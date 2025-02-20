@@ -1,18 +1,10 @@
-import {
-  List,
-  ActionPanel,
-  Action,
-  getPreferenceValues,
-  showToast,
-  Toast,
-  Icon,
-  open,
-} from "@raycast/api";
+import { List, ActionPanel, Action, getPreferenceValues, showToast, Toast, Icon, open } from "@raycast/api";
 import { useEffect, useState } from "react";
 import fs from "fs";
 import { exec } from "child_process";
 import { promisify } from "util";
 import { getPromptsFolder } from "./utils";
+import ConfigureFolder from "./configure-folder";
 
 const execAsync = promisify(exec);
 
@@ -37,7 +29,7 @@ export default function Command() {
   async function openFolder(folder: string) {
     try {
       const expandedPath = folder.replace(/^~/, process.env.HOME || "");
-      
+
       if (!fs.existsSync(expandedPath)) {
         fs.mkdirSync(expandedPath, { recursive: true });
       }
@@ -53,14 +45,14 @@ export default function Command() {
           "/Applications/Visual Studio Code.app/Contents/Resources/app/bin/code",
           "/snap/bin/code",
         ];
-        
+
         for (const path of commonPaths) {
           if (fs.existsSync(path)) {
             await execAsync(`"${path}" --new-window "${expandedPath}"`);
             return;
           }
         }
-        
+
         // Fallback to system default
         await open(expandedPath);
       }
@@ -82,11 +74,7 @@ export default function Command() {
           description="Please configure the prompts folder to start using the extension."
           actions={
             <ActionPanel>
-              <Action.Push
-                title="Configure Prompts Folder"
-                icon={Icon.Gear}
-                target={require("./configure-folder").default}
-              />
+              <Action.Push title="Configure Prompts Folder" icon={Icon.Gear} target={<ConfigureFolder />} />
             </ActionPanel>
           }
         />

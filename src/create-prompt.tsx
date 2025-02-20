@@ -1,27 +1,10 @@
-import {
-  Form,
-  ActionPanel,
-  Action,
-  showToast,
-  Toast,
-  getPreferenceValues,
-  showInFinder,
-  popToRoot,
-  Icon,
-  List,
-} from "@raycast/api";
+import { Form, ActionPanel, Action, showToast, Toast, showInFinder, popToRoot, List, Icon } from "@raycast/api";
 import { useEffect, useState } from "react";
 import fs from "fs";
 import path from "path";
-import {
-  FileFormat,
-  formatPromptContent,
-} from "./types";
+import { FileFormat, formatPromptContent } from "./types";
 import { getPromptsFolder } from "./utils";
-
-interface Preferences {
-  vscodePath?: string;
-}
+import ConfigureFolder from "./configure-folder";
 
 export default function Command() {
   const [nameError, setNameError] = useState<string | undefined>();
@@ -41,11 +24,7 @@ export default function Command() {
     }
   }
 
-  async function handleSubmit(values: { 
-    name: string;
-    content: string;
-    format: string;
-  }) {
+  async function handleSubmit(values: { name: string; content: string; format: string }) {
     try {
       if (!promptsFolder) {
         await showToast({
@@ -66,12 +45,15 @@ export default function Command() {
       }
 
       const expandedPath = promptsFolder.replace(/^~/, process.env.HOME || "");
-      
+
       if (!fs.existsSync(expandedPath)) {
         fs.mkdirSync(expandedPath, { recursive: true });
       }
 
-      const sanitizedName = values.name.trim().replace(/[^a-zA-Z0-9-_]/g, "-").replace(/-+/g, "-");
+      const sanitizedName = values.name
+        .trim()
+        .replace(/[^a-zA-Z0-9-_]/g, "-")
+        .replace(/-+/g, "-");
       const fileName = `${sanitizedName}.${values.format || "txt"}`;
       const filePath = path.join(expandedPath, fileName);
 
@@ -81,7 +63,7 @@ export default function Command() {
       }
 
       // Write the prompt content
-      const formattedContent = formatPromptContent(values.content, values.format as FileFormat || "txt");
+      const formattedContent = formatPromptContent(values.content, (values.format as FileFormat) || "txt");
       fs.writeFileSync(filePath, formattedContent);
 
       await showToast({
@@ -117,11 +99,7 @@ export default function Command() {
           description="Please configure the prompts folder to start creating prompts."
           actions={
             <ActionPanel>
-              <Action.Push
-                title="Configure Prompts Folder"
-                icon={Icon.Gear}
-                target={require("./configure-folder").default}
-              />
+              <Action.Push title="Configure Prompts Folder" icon={Icon.Gear} target={<ConfigureFolder />} />
             </ActionPanel>
           }
         />
@@ -146,11 +124,7 @@ export default function Command() {
         onChange={dropNameErrorIfNeeded}
         autoFocus
       />
-      <Form.TextArea
-        id="content"
-        title="Content"
-        placeholder="Enter your prompt content"
-      />
+      <Form.TextArea id="content" title="Content" placeholder="Enter your prompt content" />
       <Form.Dropdown id="format" title="Format" defaultValue="txt">
         <Form.Dropdown.Item value="txt" title="Text (.txt)" />
         <Form.Dropdown.Item value="md" title="Markdown (.md)" />

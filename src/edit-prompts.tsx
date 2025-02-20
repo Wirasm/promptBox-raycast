@@ -1,24 +1,13 @@
-import {
-  List,
-  ActionPanel,
-  Action,
-  getPreferenceValues,
-  showToast,
-  Toast,
-  Icon,
-  Color,
-  open,
-} from "@raycast/api";
+import { List, ActionPanel, Action, getPreferenceValues, showToast, Toast, Icon, Color, open } from "@raycast/api";
 import { useEffect, useState } from "react";
 import fs from "fs";
 import path from "path";
 import { exec } from "child_process";
 import { promisify } from "util";
-import {
-  FileFormat,
-  getFileExtension,
-} from "./types";
+import { FileFormat, getFileExtension } from "./types";
 import { getPromptsFolder } from "./utils";
+import ConfigureFolder from "./configure-folder";
+import CreatePrompt from "./create-prompt";
 
 const execAsync = promisify(exec);
 
@@ -53,7 +42,7 @@ export default function Command() {
   async function loadPrompts(folder: string) {
     try {
       const expandedPath = folder.replace(/^~/, process.env.HOME || "");
-      
+
       if (!fs.existsSync(expandedPath)) {
         fs.mkdirSync(expandedPath, { recursive: true });
       }
@@ -131,11 +120,7 @@ export default function Command() {
           description="Please configure the prompts folder to start editing prompts."
           actions={
             <ActionPanel>
-              <Action.Push
-                title="Configure Prompts Folder"
-                icon={Icon.Gear}
-                target={require("./configure-folder").default}
-              />
+              <Action.Push title="Configure Prompts Folder" icon={Icon.Gear} target={<ConfigureFolder />} />
             </ActionPanel>
           }
         />
@@ -144,11 +129,7 @@ export default function Command() {
   }
 
   return (
-    <List
-      isLoading={isLoading}
-      onSearchTextChange={setSearchText}
-      searchBarPlaceholder="Search prompts by name..."
-    >
+    <List isLoading={isLoading} onSearchTextChange={setSearchText} searchBarPlaceholder="Search prompts by name...">
       {filteredPrompts.length === 0 && !isLoading ? (
         <List.EmptyView
           icon={Icon.Document}
@@ -156,11 +137,7 @@ export default function Command() {
           description="Create your first prompt to get started"
           actions={
             <ActionPanel>
-              <Action.Push
-                title="Create New Prompt"
-                target={require("./create-prompt").default}
-                icon={Icon.PlusCircle}
-              />
+              <Action.Push title="Create New Prompt" target={<CreatePrompt />} icon={Icon.PlusCircle} />
             </ActionPanel>
           }
         />
@@ -172,10 +149,7 @@ export default function Command() {
               key={prompt.filename}
               title={prompt.name}
               subtitle={prompt.format}
-              accessories={[
-                { tag: { value: prompt.format, color } },
-                { icon },
-              ]}
+              accessories={[{ tag: { value: prompt.format, color } }, { icon }]}
               actions={
                 <ActionPanel>
                   <Action

@@ -1,26 +1,13 @@
-import {
-  List,
-  ActionPanel,
-  Action,
-  getPreferenceValues,
-  showToast,
-  Toast,
-  Icon,
-  Color,
-  open,
-} from "@raycast/api";
+import { List, ActionPanel, Action, getPreferenceValues, showToast, Toast, Icon, Color, open } from "@raycast/api";
 import { exec } from "child_process";
 import { promisify } from "util";
 import { useEffect, useState } from "react";
 import fs from "fs";
 import path from "path";
-import {
-  Prompt,
-  FileFormat,
-  getFileExtension,
-  extractPromptContent,
-} from "./types";
+import { FileFormat, getFileExtension, extractPromptContent } from "./types";
 import { getPromptsFolder } from "./utils";
+import ConfigureFolder from "./configure-folder";
+import CreatePrompt from "./create-prompt";
 
 const execAsync = promisify(exec);
 
@@ -43,7 +30,6 @@ export default function Command() {
   const [promptsFolder, setPromptsFolder] = useState<string>();
 
   useEffect(() => {
-    // Load folder from LocalStorage
     getPromptsFolder().then((folder) => {
       setPromptsFolder(folder);
       if (folder) {
@@ -57,7 +43,7 @@ export default function Command() {
   async function loadPrompts(folder: string) {
     try {
       const expandedPath = folder.replace(/^~/, process.env.HOME || "");
-      
+
       if (!fs.existsSync(expandedPath)) {
         fs.mkdirSync(expandedPath, { recursive: true });
       }
@@ -71,7 +57,7 @@ export default function Command() {
           const filepath = path.join(expandedPath, file);
           const content = fs.readFileSync(filepath, "utf-8");
           const promptContent = extractPromptContent(content, format);
-          
+
           loadedPrompts.push({
             name: file.replace(/\.[^.]+$/, ""),
             content: promptContent,
@@ -122,11 +108,7 @@ export default function Command() {
           description="Please configure the prompts folder to start using the extension."
           actions={
             <ActionPanel>
-              <Action.Push
-                title="Configure Prompts Folder"
-                icon={Icon.Gear}
-                target={require("./configure-folder").default}
-              />
+              <Action.Push title="Configure Prompts Folder" icon={Icon.Gear} target={<ConfigureFolder />} />
             </ActionPanel>
           }
         />
@@ -135,11 +117,7 @@ export default function Command() {
   }
 
   return (
-    <List
-      isLoading={isLoading}
-      onSearchTextChange={setSearchText}
-      searchBarPlaceholder="Search prompts by name..."
-    >
+    <List isLoading={isLoading} onSearchTextChange={setSearchText} searchBarPlaceholder="Search prompts by name...">
       {filteredPrompts.length === 0 && !isLoading ? (
         <List.EmptyView
           icon={Icon.Document}
@@ -147,60 +125,54 @@ export default function Command() {
           description="Create your first prompt to get started"
           actions={
             <ActionPanel>
-              <Action.Push
-                title="Create New Prompt"
-                target={require("./create-prompt").default}
-                icon={Icon.PlusCircle}
-              />
+              <Action.Push title="Create New Prompt" target={<CreatePrompt />} icon={Icon.PlusCircle} />
             </ActionPanel>
           }
         />
       ) : (
         filteredPrompts.map((prompt) => {
-        const { icon, color } = getFormatIcon(prompt.format);
-        return (
-          <List.Item
-            key={prompt.filename}
-            title={prompt.name}
-            subtitle={prompt.format}
-            accessories={[
-              { tag: { value: prompt.format, color } },
-              { icon },
-            ]}
-            actions={
-              <ActionPanel>
-                <Action.Paste content={prompt.content} />
-                <Action.CopyToClipboard
-                  content={prompt.content}
-                  shortcut={{ modifiers: ["cmd", "shift"], key: "c" }}
-                />
-                <Action
-                  title="Open in Editor"
-                  icon={Icon.BlankDocument}
-                  shortcut={{ modifiers: ["cmd"], key: "o" }}
-                  onAction={async () => {
-                    try {
-                      const { vscodePath } = getPreferenceValues<Preferences>();
-                      if (vscodePath && fs.existsSync(vscodePath)) {
-                        await execAsync(`"${vscodePath}" "${prompt.filepath}"`);
-                      } else {
-                        await open(prompt.filepath);
+          const { icon, color } = getFormatIcon(prompt.format);
+          return (
+            <List.Item
+              key={prompt.filename}
+              title={prompt.name}
+              subtitle={prompt.format}
+              accessories={[{ tag: { value: prompt.format, color } }, { icon }]}
+              actions={
+                <ActionPanel>
+                  <Action.Paste content={prompt.content} />
+                  <Action.CopyToClipboard
+                    content={prompt.content}
+                    shortcut={{ modifiers: ["cmd", "shift"], key: "c" }}
+                  />
+                  <Action
+                    title="Open in Editor"
+                    icon={Icon.BlankDocument}
+                    shortcut={{ modifiers: ["cmd"], key: "o" }}
+                    onAction={async () => {
+                      try {
+                        const { vscodePath } = getPreferenceValues<Preferences>();
+                        if (vscodePath && fs.existsSync(vscodePath)) {
+                          await execAsync(`"${vscodePath}" "${prompt.filepath}"`);
+                        } else {
+                          await open(prompt.filepath);
+                        }
+                      } catch (error) {
+                        showToast({
+                          style: Toast.Style.Failure,
+                          title: "Failed to open editor",
+                          message: String(error),
+                        });
                       }
-                    } catch (error) {
-                      showToast({
-                        style: Toast.Style.Failure,
-                        title: "Failed to open editor",
-                        message: String(error),
-                      });
-                    }
-                  }}
-                />
-                <Action.ShowInFinder path={prompt.filepath} />
-              </ActionPanel>
-            }
-          />
-        );
-      }))}
+                    }}
+                  />
+                  <Action.ShowInFinder path={prompt.filepath} />
+                </ActionPanel>
+              }
+            />
+          );
+        })
+      )}
     </List>
   );
 }

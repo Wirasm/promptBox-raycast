@@ -18,11 +18,11 @@ export function getFileExtension(filename: string): FileFormat | null {
 
 export function formatPromptContent(content: string, format: FileFormat): string {
   const escapedContent = content
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;')
-    .replace(/'/g, '&apos;');
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&apos;");
 
   switch (format) {
     case "json":
@@ -41,17 +41,18 @@ export function extractPromptContent(content: string, format: FileFormat): strin
   try {
     switch (format) {
       case "json":
-        const jsonData = JSON.parse(content);
-        return jsonData.prompt || "";
-      case "xml":
+        return JSON.parse(content).prompt || "";
+      case "xml": {
         const match = content.match(/<prompt>(.*?)<\/prompt>/s);
-        if (!match) return content;
-        return match[1]
-          .replace(/&amp;/g, '&')
-          .replace(/&lt;/g, '<')
-          .replace(/&gt;/g, '>')
-          .replace(/&quot;/g, '"')
-          .replace(/&apos;/g, "'");
+        return match
+          ? match[1]
+              .replace(/&amp;/g, "&")
+              .replace(/&lt;/g, "<")
+              .replace(/&gt;/g, ">")
+              .replace(/&quot;/g, '"')
+              .replace(/&apos;/g, "'")
+          : content;
+      }
       case "md":
         return content.replace(/^#\s*Prompt\s*\n+/, "").trim();
       case "txt":
