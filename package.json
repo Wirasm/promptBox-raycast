@@ -2,23 +2,70 @@
   "$schema": "https://www.raycast.com/schemas/extension.json",
   "name": "promptbox",
   "title": "PromptBox",
-  "description": "A box where you can store and easily access and qickly insert your prompts",
+  "description": "Store and quickly access your LLM prompts with format support and VSCode integration",
   "icon": "extension-icon.png",
   "author": "rasmus_widing",
   "owner": "widinglabs",
   "categories": [
     "Productivity",
     "Developer Tools",
-    "Documentation"
+    "Documentation",
+    "Applications"
   ],
   "license": "MIT",
   "commands": [
     {
+      "name": "configure-folder",
+      "title": "Configure Prompts Folder",
+      "subtitle": "Set up where your prompts will be stored",
+      "description": "Choose or create a folder to store your prompts",
+      "mode": "view"
+    },
+    {
       "name": "promptbox",
-      "title": "promptBox",
-      "subtitle": "Store your prompts for easy access",
-      "description": "Opens your prompt box where you can select which prompt to use",
-      "mode": "no-view"
+      "title": "Browse Prompts",
+      "subtitle": "Browse and use your stored prompts",
+      "description": "Browse through your prompts with tag filtering and quick actions",
+      "mode": "view",
+      "preferences": [
+        {
+          "name": "promptsFolder",
+          "title": "Prompts Folder",
+          "description": "The folder where your prompts are stored (supports ~ for home directory)",
+          "type": "textfield",
+          "required": true,
+          "default": "~/Documents/Prompts"
+        },
+        {
+          "name": "vscodePath",
+          "title": "VSCode Path",
+          "description": "Path to VSCode executable (leave empty to use default system editor)",
+          "type": "textfield",
+          "required": false,
+          "default": "/usr/local/bin/code"
+        }
+      ]
+    },
+    {
+      "name": "create-prompt",
+      "title": "Create Prompt",
+      "subtitle": "Create a new prompt in your preferred format",
+      "description": "Create a new prompt and save it in txt, md, json, or xml format",
+      "mode": "view"
+    },
+    {
+      "name": "edit-prompts",
+      "title": "Edit Prompts",
+      "subtitle": "Open prompts in your editor",
+      "description": "Browse and open prompts in VSCode or your default editor",
+      "mode": "view"
+    },
+    {
+      "name": "open-folder",
+      "title": "Open Prompts Folder",
+      "subtitle": "Open the entire prompts folder in your editor",
+      "description": "Open the prompts folder in VSCode or your default editor",
+      "mode": "view"
     }
   ],
   "dependencies": {
